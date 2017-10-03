@@ -6,8 +6,8 @@ import (
 )
 
 type jsonError struct {
-	status  int
-	message string
+	Status  int    `json:"status"`
+	Message string `json:"message"`
 }
 
 func writeJSONError(w http.ResponseWriter, status int, message string) {

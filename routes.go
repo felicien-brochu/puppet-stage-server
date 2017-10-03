@@ -12,6 +12,7 @@ func getRouter() *httprouter.Router {
 	router.GET("/websocket", controller.WebsocketHandler)
 
 	router.GET("/", controller.HomeHandler)
+	router.GET("/puppet", controller.GetPuppetHandler)
 	router.PUT("/puppet/:name", controller.CreatePuppetHandler)
 
 	return router
