@@ -1,0 +1,56 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Puppet stage</title>
+</head>
+<body>
+
+	<p id="position">
+		200
+	</p>
+<script>
+      var url = "ws://" + window.location.host + "/websocket";
+      var ws = new WebSocket(url);
+			var maxDelay = 0;
+			var lastX = 0;
+
+      ws.onmessage = function (msg) {
+				var parts = msg.data.split(" ");
+				var delay = window.performance.now() - msg.data;
+				// // console.log(msg.data);
+				if (delay > maxDelay) {
+					maxDelay = delay;
+					console.log(maxDelay);
+				}
+        // var cmds = {"iam": iam, "set": set, "dis": dis};
+        // if (msg.data) {
+        //   var parts = msg.data.split(" ")
+        //   var cmd = cmds[parts[0]];
+        //   if (cmd) {
+        //     cmd.apply(null, parts.slice(1));
+        //   }
+        // }
+      };
+
+      window.onmousemove = function (e) {
+				// set(myid, e.pageX, e.pageY);
+				var x = e.pageX / window.innerWidth * 200.;
+				if (x > 200) x = 200;
+				var t = window.performance.now();
+				ws.send(t);
+				if (Math.abs(t - lastX) > 1) {
+					lastX = t;
+					setPosition(x);
+				}
+				// console.log(x);
+      }
+
+			function setPosition(p) {
+				var positionBlock = document.getElementById("position");
+				positionBlock.innerHTML = Math.floor(p);
+			}
+
+
+</script>
+</body>
+</html>
