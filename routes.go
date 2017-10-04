@@ -13,6 +13,7 @@ func getRouter() *httprouter.Router {
 
 	router.GET("/", controller.HomeHandler)
 	router.GET("/puppet", controller.GetPuppetHandler)
+	router.GET("/puppets", controller.ListPuppetsHandler)
 	router.PUT("/puppet/:name", controller.CreatePuppetHandler)
 
 	return router

@@ -1,0 +1,4 @@
+{
+	"puppetsDirectory": "./db/puppets",
+	"stagesDirectory": "./db/stages"
+}

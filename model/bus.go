@@ -1,4 +1,4 @@
-package puppet
+package model
 
 import (
 	"errors"

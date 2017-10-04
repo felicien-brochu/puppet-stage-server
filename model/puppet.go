@@ -1,4 +1,4 @@
-package puppet
+package model
 
 // Puppet represents a puppet configuration
 type Puppet struct {

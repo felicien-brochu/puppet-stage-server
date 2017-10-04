@@ -1,4 +1,4 @@
-package puppet
+package model
 
 // Storage stores runtime objects of the server
 type Storage struct {
