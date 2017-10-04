@@ -11,6 +11,9 @@ func getRouter() *httprouter.Router {
 
 	router.GET("/websocket", controller.WebsocketHandler)
 
+	router.NotFound = controller.NotFoundHandler{}
+	router.MethodNotAllowed = controller.MethodNotAllowedHandler{}
+
 	router.GET("/", controller.HomeHandler)
 	router.GET("/puppet", controller.GetPuppetHandler)
 	router.GET("/puppets", controller.ListPuppetsHandler)

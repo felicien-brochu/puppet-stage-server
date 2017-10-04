@@ -8,5 +8,5 @@ import (
 
 // HomeHandler serves the home page
 func HomeHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	http.ServeFile(w, r, "./html/index.html")
+	writeJSONResponse(w, http.StatusOK, "Puppet Stage Server")
 }
