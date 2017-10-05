@@ -1,16 +1,18 @@
 package model
 
-import "errors"
+import (
+	"errors"
+)
 
 // Servo describes a servomotor
 type Servo struct {
-	Name            string
-	Addr            int
-	DefaultPosition int
-	HardMin         int
-	HardMax         int
-	Min             int
-	Max             int
+	Name            string `json:"name"`
+	Addr            int    `json:"addr"`
+	DefaultPosition int    `json:"defaultPosition"`
+	HardMin         int    `json:"hardMin"`
+	HardMax         int    `json:"hardMax"`
+	Min             int    `json:"min"`
+	Max             int    `json:"max"`
 }
 
 const (

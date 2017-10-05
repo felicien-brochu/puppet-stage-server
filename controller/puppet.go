@@ -1,8 +1,11 @@
 package controller
 
 import (
-	"felicien/puppet-server/files"
+	"encoding/json"
+	"felicien/puppet-server/db"
 	"felicien/puppet-server/model"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -11,31 +14,29 @@ import (
 
 // GetPuppetHandler sends a representation of the current puppet
 func GetPuppetHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	if isJSONRequest(r) {
-		getPuppetJSONHandler(w, r, params)
-	} else {
-		getPuppetHTMLHandler(w, r, params)
+	id := params.ByName("id")
+	if id == "" {
+		writeJSONError(w, http.StatusNotFound, "No ID in request")
+		return
 	}
-}
 
-func getPuppetJSONHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	puppet := model.GetCurrentPuppet()
+	puppet, err := db.GetPuppet(id)
+	if err != nil {
+		panic(err)
+	}
 	if puppet == nil {
-		writeJSONError(w, http.StatusNotFound, "No current puppet")
-	} else {
-		writeJSONResponse(w, http.StatusOK, *puppet)
+		writeJSONError(w, http.StatusNotFound, http.StatusText(http.StatusNotFound))
+		return
 	}
-}
 
-func getPuppetHTMLHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	http.ServeFile(w, r, "./html/puppet.html")
+	writeJSONResponse(w, http.StatusOK, puppet)
 }
 
 // ListPuppetsHandler lists puppets saved on server
 func ListPuppetsHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	puppets, err := files.ListPuppets()
+	puppets, err := db.ListPuppets()
 	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, err.Error())
+		panic(err)
 	} else {
 		writeJSONResponse(w, http.StatusOK, puppets)
 	}
@@ -43,15 +44,45 @@ func ListPuppetsHandler(w http.ResponseWriter, r *http.Request, params httproute
 
 // CreatePuppetHandler creates a new puppet
 func CreatePuppetHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	name := params.ByName("name")
-	if name == "" {
-		writeJSONResponse(w, http.StatusBadRequest, "No name")
+	var puppet model.Puppet
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(body, &puppet)
+	if err != nil {
+		writeJSONError(w, http.StatusBadRequest, fmt.Sprintf("Puppet JSON not well formatted: %v", err))
+		return
+	}
+	if puppet.Name == "" {
+		writeJSONError(w, http.StatusBadRequest, "Puppet JSON must contain a name")
+	}
+	puppet = model.CreatePuppet(puppet.Name)
+	err = db.SavePuppet(puppet)
+	if err != nil {
+		panic(err)
 	}
 
-	// TODO check name conflicts with existing puppets on Server
-	// TODO check if there is no current Puppet
+	log.Printf("Puppet created: %v\n", puppet)
+	writeJSONResponse(w, http.StatusCreated, puppet)
+}
 
-	puppet := model.CreatePuppet(name)
-	log.Printf("Puppet created: %v\n", *puppet)
-	writeJSONResponse(w, http.StatusCreated, *puppet)
+// UpdatePuppetHandler creates a new puppet
+func UpdatePuppetHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	var puppet model.Puppet
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(body, &puppet)
+	if err != nil {
+		writeJSONError(w, http.StatusBadRequest, fmt.Sprintf("Puppet JSON not well formatted: %v", err))
+		return
+	}
+	err = db.SavePuppet(puppet)
+	if err != nil {
+		panic(err)
+	}
+
+	writeJSONResponse(w, http.StatusOK, puppet)
 }

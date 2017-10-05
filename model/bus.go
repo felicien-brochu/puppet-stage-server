@@ -10,6 +10,17 @@ import (
 	"github.com/tarm/serial"
 )
 
+// BusType type of bus
+type BusType int
+
+const (
+	// BusTypeSerial serial bus type
+	BusTypeSerial = BusType(iota)
+
+	// BusTypeTCP TCP bus type
+	BusTypeTCP = BusType(iota)
+)
+
 // Bus describes a communication bus (serial COM bus, wifi etc.)
 type Bus interface {
 	Open() error

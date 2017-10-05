@@ -2,22 +2,28 @@ package main
 
 import (
 	"felicien/puppet-server/controller"
+	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/cors"
 )
 
-func getRouter() *httprouter.Router {
+func getRouter() http.Handler {
 	router := httprouter.New()
 
 	router.GET("/websocket", controller.WebsocketHandler)
 
 	router.NotFound = controller.NotFoundHandler{}
 	router.MethodNotAllowed = controller.MethodNotAllowedHandler{}
+	router.PanicHandler = controller.PanicHandler
 
 	router.GET("/", controller.HomeHandler)
-	router.GET("/puppet", controller.GetPuppetHandler)
+	router.GET("/puppet/:id", controller.GetPuppetHandler)
 	router.GET("/puppets", controller.ListPuppetsHandler)
-	router.PUT("/puppet/:name", controller.CreatePuppetHandler)
+	router.PUT("/puppet", controller.CreatePuppetHandler)
+	router.PUT("/puppet/:id?", controller.UpdatePuppetHandler)
 
-	return router
+	handler := cors.AllowAll().Handler(router)
+
+	return handler
 }
