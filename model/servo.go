@@ -2,10 +2,13 @@ package model
 
 import (
 	"errors"
+
+	"github.com/google/uuid"
 )
 
 // Servo describes a servomotor
 type Servo struct {
+	ID              string `json:"id"`
 	Name            string `json:"name"`
 	Addr            int    `json:"addr"`
 	DefaultPosition int    `json:"defaultPosition"`
@@ -21,9 +24,15 @@ const (
 	servoAvg     = (servoHardMin + servoHardMax) / 2
 )
 
-// NewServo constructs a new Servo with default values
-func NewServo() Servo {
+// IsOKValue checks if the given value is in bounds of the Device
+func (servo *Servo) IsOKValue(value int) bool {
+	return value >= servo.Min && value <= servo.Max
+}
+
+// DefaultServo constructs a new Servo with default values
+func DefaultServo() Servo {
 	return Servo{
+		uuid.New().String(),
 		"",
 		-1,
 		servoAvg,

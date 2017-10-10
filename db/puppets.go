@@ -9,6 +9,9 @@ import (
 
 // GetPuppet returns the puppet with the given id if present in db
 func GetPuppet(id string) (*model.Puppet, error) {
+	conn := pool.Get()
+	defer conn.Close()
+
 	exists, err := redis.Bool(conn.Do("EXISTS", "puppet:"+id))
 	if err != nil {
 		return nil, err
@@ -33,6 +36,9 @@ func GetPuppet(id string) (*model.Puppet, error) {
 
 // ListPuppets retrieves puppets from redis
 func ListPuppets() ([]model.Puppet, error) {
+	conn := pool.Get()
+	defer conn.Close()
+
 	puppetKeys, err := redis.Values(conn.Do("KEYS", "puppet:*"))
 	if err != nil {
 		return nil, err
@@ -66,6 +72,10 @@ func SavePuppet(puppet model.Puppet) error {
 	if err != nil {
 		return err
 	}
+
+	conn := pool.Get()
+	defer conn.Close()
+
 	_, err = conn.Do("SET", "puppet:"+puppet.ID, puppetJSON)
 	if err != nil {
 		return err

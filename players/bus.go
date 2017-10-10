@@ -1,7 +1,8 @@
-package model
+package players
 
 import (
 	"errors"
+	"felicien/puppet-server/model"
 	"fmt"
 	"io"
 	"os/exec"
@@ -10,23 +11,20 @@ import (
 	"github.com/tarm/serial"
 )
 
-// BusType type of bus
-type BusType int
-
-const (
-	// BusTypeSerial serial bus type
-	BusTypeSerial = BusType(iota)
-
-	// BusTypeTCP TCP bus type
-	BusTypeTCP = BusType(iota)
-)
-
 // Bus describes a communication bus (serial COM bus, wifi etc.)
 type Bus interface {
 	Open() error
 	Close() error
 	Reader() io.Reader
 	Writer() io.Writer
+}
+
+// NewBus creates a new bus according to given bus type
+func NewBus(busType model.BusType) (Bus, error) {
+	if busType == model.BusTypeSerial {
+		return DefaultSerialBus()
+	}
+	return nil, errors.New("BusType not supported")
 }
 
 // SerialBus describes a serial bus

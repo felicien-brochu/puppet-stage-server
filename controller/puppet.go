@@ -14,7 +14,7 @@ import (
 
 // GetPuppetHandler sends a representation of the current puppet
 func GetPuppetHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	id := params.ByName("id")
+	id := params.ByName("puppetID")
 	if id == "" {
 		writeJSONError(w, http.StatusNotFound, "No ID in request")
 		return
