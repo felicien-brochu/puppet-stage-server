@@ -82,3 +82,23 @@ func SavePuppet(puppet model.Puppet) error {
 	}
 	return nil
 }
+
+// DeletePuppet delete a puppet
+func DeletePuppet(puppetID string) (*model.Puppet, error) {
+	puppet, err := GetPuppet(puppetID)
+	if err != nil {
+		return nil, err
+	}
+	if puppet == nil {
+		return nil, nil
+	}
+
+	conn := pool.Get()
+	defer conn.Close()
+
+	_, err = conn.Do("DEL", "puppet:"+puppetID)
+	if err != nil {
+		return nil, err
+	}
+	return puppet, nil
+}

@@ -86,3 +86,18 @@ func UpdatePuppetHandler(w http.ResponseWriter, r *http.Request, params httprout
 
 	writeJSONResponse(w, http.StatusOK, puppet)
 }
+
+// DeletePuppetHandler deletes a puppet
+func DeletePuppetHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	puppetID := params.ByName("puppetID")
+	puppet, err := db.DeletePuppet(puppetID)
+	if err != nil {
+		panic(err)
+	}
+	if puppet == nil {
+		writeJSONError(w, http.StatusNotFound, fmt.Sprintf("No puppet for id '%s'", puppetID))
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, puppet)
+}
