@@ -3,6 +3,7 @@ package db
 import (
 	"encoding/json"
 	"felicien/puppet-server/model"
+	"fmt"
 
 	"github.com/garyburd/redigo/redis"
 )
@@ -12,7 +13,7 @@ func GetPuppet(id string) (*model.Puppet, error) {
 	conn := pool.Get()
 	defer conn.Close()
 
-	exists, err := redis.Bool(conn.Do("EXISTS", "puppet:"+id))
+	exists, err := redis.Bool(conn.Do("EXISTS", fmt.Sprintf("puppet:%s", id)))
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +21,7 @@ func GetPuppet(id string) (*model.Puppet, error) {
 		return nil, nil
 	}
 
-	puppetJSON, err := redis.Bytes(conn.Do("GET", "puppet:"+id))
+	puppetJSON, err := redis.Bytes(conn.Do("GET", fmt.Sprintf("puppet:%s", id)))
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +77,7 @@ func SavePuppet(puppet model.Puppet) error {
 	conn := pool.Get()
 	defer conn.Close()
 
-	_, err = conn.Do("SET", "puppet:"+puppet.ID, puppetJSON)
+	_, err = conn.Do("SET", fmt.Sprintf("puppet:%s", puppet.ID), puppetJSON)
 	if err != nil {
 		return err
 	}
@@ -96,7 +97,7 @@ func DeletePuppet(puppetID string) (*model.Puppet, error) {
 	conn := pool.Get()
 	defer conn.Close()
 
-	_, err = conn.Do("DEL", "puppet:"+puppetID)
+	_, err = conn.Do("DEL", fmt.Sprintf("puppet:%s", puppetID))
 	if err != nil {
 		return nil, err
 	}

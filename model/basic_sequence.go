@@ -2,13 +2,17 @@ package model
 
 import (
 	"fmt"
+
+	"github.com/google/uuid"
 )
 
 // BasicSequence is a monovalued sequence defined by Bezier curves
 type BasicSequence struct {
-	start    Time
-	duration Duration
-	Curves   []BezierCurve
+	ID       string        `json:"id"`
+	Start    Time          `json:"start"`
+	Duration Duration      `json:"duration"`
+	Curves   []BezierCurve `json:"curves"`
+	Slave    bool          `json:"slave"`
 }
 
 const (
@@ -17,26 +21,28 @@ const (
 	BezierTimePrecision Duration = Nanosecond
 )
 
-// Point represents a time point
-type Point struct {
-	T Time
-	V float64
-}
-
 // BezierCurve defines a cubic bezier curve
 type BezierCurve struct {
-	P1 Point
-	C1 Point
-	P2 Point
-	C2 Point
+	P1 Point `json:"p1"`
+	C1 Point `json:"c1"`
+	P2 Point `json:"p2"`
+	C2 Point `json:"c2"`
+}
+
+// Point represents a time point
+type Point struct {
+	T Time    `json:"t"`
+	V float64 `json:"v"`
 }
 
 // NewBasicSequence returns a new basic sequence
 func NewBasicSequence() BasicSequence {
 	return BasicSequence{
+		uuid.New().String(),
 		0,
 		10 * Second,
 		make([]BezierCurve, 0),
+		false,
 	}
 }
 
@@ -50,14 +56,19 @@ func NewBezierCurve(a Point, b Point) BezierCurve {
 	}
 }
 
-// StartTime returns the starting time of the sequence
-func (sequence *BasicSequence) StartTime() Time {
-	return sequence.start
+// GetID returns the sequence id.
+func (sequence *BasicSequence) GetID() string {
+	return sequence.ID
 }
 
-// Duration returns the duration of the sequence
-func (sequence *BasicSequence) Duration() Duration {
-	return sequence.duration
+// StartTime returns the starting time of the sequence
+func (sequence *BasicSequence) StartTime() Time {
+	return sequence.Start
+}
+
+// TotalDuration returns the duration of the sequence
+func (sequence *BasicSequence) TotalDuration() Duration {
+	return sequence.Duration
 }
 
 // ValueAt returns the value of the sequence at the given time

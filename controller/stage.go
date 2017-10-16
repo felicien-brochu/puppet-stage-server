@@ -56,8 +56,13 @@ func CreateStageHandler(w http.ResponseWriter, r *http.Request, params httproute
 	}
 	if stage.Name == "" {
 		writeJSONError(w, http.StatusBadRequest, "Stage JSON must contain a name")
+		return
 	}
-	stage = model.NewStage(stage.Name)
+	if stage.PuppetID == "" {
+		writeJSONError(w, http.StatusBadRequest, "Stage JSON must contain a puppetID")
+		return
+	}
+	stage = model.InitStage(stage)
 	err = db.SaveStage(stage)
 	if err != nil {
 		panic(err)

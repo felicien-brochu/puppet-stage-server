@@ -18,6 +18,7 @@ func getRouter() http.Handler {
 	router.PanicHandler = controller.PanicHandler
 
 	router.GET("/", controller.HomeHandler)
+	router.GET("/uuids", controller.GetUUIDsHandler)
 
 	router.GET("/board/new", controller.NewBoardHandler)
 	router.GET("/servo/new", controller.NewServoHandler)

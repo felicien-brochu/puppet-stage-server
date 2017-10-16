@@ -3,6 +3,7 @@ package db
 import (
 	"encoding/json"
 	"felicien/puppet-server/model"
+	"fmt"
 
 	"github.com/garyburd/redigo/redis"
 )
@@ -12,7 +13,7 @@ func GetStage(id string) (*model.Stage, error) {
 	conn := pool.Get()
 	defer conn.Close()
 
-	exists, err := redis.Bool(conn.Do("EXISTS", "stage:"+id))
+	exists, err := redis.Bool(conn.Do("EXISTS", fmt.Sprintf("stage:%s", id)))
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +21,7 @@ func GetStage(id string) (*model.Stage, error) {
 		return nil, nil
 	}
 
-	stageJSON, err := redis.Bytes(conn.Do("GET", "stage:"+id))
+	stageJSON, err := redis.Bytes(conn.Do("GET", fmt.Sprintf("stage:%s", id)))
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +60,6 @@ func ListStages() ([]model.Stage, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		stages = append(stages, stage)
 	}
 
@@ -76,7 +76,7 @@ func SaveStage(stage model.Stage) error {
 	conn := pool.Get()
 	defer conn.Close()
 
-	_, err = conn.Do("SET", "stage:"+stage.ID, stageJSON)
+	_, err = conn.Do("SET", fmt.Sprintf("stage:%s", stage.ID), stageJSON)
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func DeleteStage(stageID string) (*model.Stage, error) {
 	conn := pool.Get()
 	defer conn.Close()
 
-	_, err = conn.Do("DEL", "stage:"+stageID)
+	_, err = conn.Do("DEL", fmt.Sprintf("stage:%s", stageID))
 	if err != nil {
 		return nil, err
 	}

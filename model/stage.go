@@ -6,34 +6,37 @@ import (
 
 // Stage is the name of a project in Puppet Stage
 type Stage struct {
-	ID        string     `json:"id"`
-	Name      string     `json:"name"`
-	Puppet    *Puppet    `json:"puppet"`
-	Sequences []Sequence `json:"sequences"`
-	Duration  Duration   `json:"duration"`
-	History   []Stage    `json:"history"`
+	ID        string           `json:"id"`
+	Name      string           `json:"name"`
+	PuppetID  string           `json:"puppetID"`
+	Sequences []DriverSequence `json:"sequences"`
+	Duration  Duration         `json:"duration"`
+	History   []Stage          `json:"history"`
 }
 
 // Sequence defines a sequence of values over time
 type Sequence interface {
-	ValueAt(t Time) (float64, error)
+	GetID() string
 	StartTime() Time
-	Duration() Duration
+	TotalDuration() Duration
+	ValueAt(t Time) (float64, error)
 }
 
-// DriverSequence is a sequence that can drive a servo
-type DriverSequence interface {
-	Sequence
-	Servo() *Servo
+// DriverSequence is a sequence that can drive a servo.
+// First level sequence, it determines its values by its
+// subsequences.
+type DriverSequence struct {
+	ID        string          `json:"id"`
+	ServoID   string          `json:"servoID"`
+	Sequences []BasicSequence `json:"sequences"`
 }
 
-// NewStage returns a new stage
-func NewStage(name string) Stage {
-	return Stage{
-		ID:        uuid.New().String(),
-		Name:      name,
-		Sequences: make([]Sequence, 0),
-		Duration:  10 * Second,
-		History:   make([]Stage, 0),
-	}
+// InitStage inits a new stage
+func InitStage(stage Stage) Stage {
+	stage.ID = uuid.New().String()
+	stage.Sequences = make([]DriverSequence, 0)
+	stage.Duration = 10 * Second
+	stage.History = make([]Stage, 0)
+
+	return stage
 }
