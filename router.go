@@ -35,8 +35,10 @@ func getRouter() http.Handler {
 	router.GET("/stage/:stageID", controller.GetStageHandler)
 	router.GET("/stages", controller.ListStagesHandler)
 	router.PUT("/stage", controller.CreateStageHandler)
-	router.PUT("/stage/:stageID?", controller.UpdateStageHandler)
 	router.DELETE("/stage/:stageID", controller.DeleteStageHandler)
+	router.GET("/stage/:stageID/history", controller.GetStageHistoryHandler)
+	router.PUT("/stage/:stageID/history", controller.SaveStageHistoryHandler)
+	router.PUT("/stage/:stageID/history/activeRevision", controller.SaveHistoryActiveRevisionHandler)
 
 	handler := cors.AllowAll().Handler(router)
 

@@ -8,11 +8,12 @@ import (
 
 // BasicSequence is a monovalued sequence defined by Bezier curves
 type BasicSequence struct {
-	ID       string        `json:"id"`
-	Start    Time          `json:"start"`
-	Duration Duration      `json:"duration"`
-	Curves   []BezierCurve `json:"curves"`
-	Slave    bool          `json:"slave"`
+	ID        string     `json:"id"`
+	Name      string     `json:"name"`
+	Start     Time       `json:"start"`
+	Duration  Duration   `json:"duration"`
+	Keyframes []Keyframe `json:"keyframes"`
+	Slave     bool       `json:"slave"`
 }
 
 const (
@@ -20,6 +21,13 @@ const (
 	// are approximated (faster) this precision is the upper bound of the approximation.
 	BezierTimePrecision Duration = Nanosecond
 )
+
+// Keyframe defines a keyframe that can be used to construct cubic bezier curves
+type Keyframe struct {
+	P  Point `json:"p"`
+	C1 Point `json:"c1"`
+	C2 Point `json:"c2"`
+}
 
 // BezierCurve defines a cubic bezier curve
 type BezierCurve struct {
@@ -39,20 +47,31 @@ type Point struct {
 func NewBasicSequence() BasicSequence {
 	return BasicSequence{
 		uuid.New().String(),
+		"",
 		0,
 		10 * Second,
-		make([]BezierCurve, 0),
+		make([]Keyframe, 0),
 		false,
 	}
 }
 
-// NewBezierCurve returns a new BezierCurve with control points on the value points
-func NewBezierCurve(a Point, b Point) BezierCurve {
+// NewBezierCurve returns a new BezierCurve
+func NewBezierCurve(p1 Point, c1 Point, p2 Point, c2 Point) BezierCurve {
 	return BezierCurve{
-		a,
-		a,
-		b,
-		b,
+		p1,
+		c1,
+		p2,
+		c2,
+	}
+}
+
+// KeyframesToBezierCurve returns a new BezierCurve from 2 Keyframes
+func KeyframesToBezierCurve(a Keyframe, b Keyframe) BezierCurve {
+	return BezierCurve{
+		a.P,
+		a.C2,
+		b.P,
+		b.C1,
 	}
 }
 
@@ -82,8 +101,12 @@ func (sequence *BasicSequence) ValueAt(t Time) (float64, error) {
 }
 
 func (sequence *BasicSequence) curveAt(t Time) *BezierCurve {
-	for _, curve := range sequence.Curves {
-		if curve.P1.T.Before(t) && curve.P2.T.After(t) {
+	for i := 0; i < len(sequence.Keyframes)-1; i++ {
+		keyframe1 := sequence.Keyframes[i]
+		keyframe2 := sequence.Keyframes[i+1]
+
+		if keyframe1.P.T.Before(t) && keyframe2.P.T.After(t) {
+			curve := KeyframesToBezierCurve(keyframe1, keyframe2)
 			return &curve
 		}
 	}

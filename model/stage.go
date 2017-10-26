@@ -11,7 +11,6 @@ type Stage struct {
 	PuppetID  string           `json:"puppetID"`
 	Sequences []DriverSequence `json:"sequences"`
 	Duration  Duration         `json:"duration"`
-	History   []Stage          `json:"history"`
 }
 
 // Sequence defines a sequence of values over time
@@ -27,8 +26,10 @@ type Sequence interface {
 // subsequences.
 type DriverSequence struct {
 	ID        string          `json:"id"`
+	Name      string          `json:"name"`
 	ServoID   string          `json:"servoID"`
 	Sequences []BasicSequence `json:"sequences"`
+	Expanded  bool            `json:"expanded"`
 }
 
 // InitStage inits a new stage
@@ -36,7 +37,6 @@ func InitStage(stage Stage) Stage {
 	stage.ID = uuid.New().String()
 	stage.Sequences = make([]DriverSequence, 0)
 	stage.Duration = 10 * Second
-	stage.History = make([]Stage, 0)
 
 	return stage
 }

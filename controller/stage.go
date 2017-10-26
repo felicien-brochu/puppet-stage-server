@@ -14,13 +14,13 @@ import (
 
 // GetStageHandler sends a representation of the current stage
 func GetStageHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	id := params.ByName("stageID")
-	if id == "" {
+	stageID := params.ByName("stageID")
+	if stageID == "" {
 		writeJSONError(w, http.StatusNotFound, "No ID in request")
 		return
 	}
 
-	stage, err := db.GetStage(id)
+	stage, err := db.GetStage(stageID)
 	if err != nil {
 		panic(err)
 	}
@@ -63,33 +63,13 @@ func CreateStageHandler(w http.ResponseWriter, r *http.Request, params httproute
 		return
 	}
 	stage = model.InitStage(stage)
-	err = db.SaveStage(stage)
+	err = db.CreateStage(stage)
 	if err != nil {
 		panic(err)
 	}
 
 	log.Printf("Stage created: %v\n", stage)
 	writeJSONResponse(w, http.StatusCreated, stage)
-}
-
-// UpdateStageHandler creates a new stage
-func UpdateStageHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	var stage model.Stage
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		panic(err)
-	}
-	err = json.Unmarshal(body, &stage)
-	if err != nil {
-		writeJSONError(w, http.StatusBadRequest, fmt.Sprintf("Stage JSON not well formatted: %v", err))
-		return
-	}
-	err = db.SaveStage(stage)
-	if err != nil {
-		panic(err)
-	}
-
-	writeJSONResponse(w, http.StatusOK, stage)
 }
 
 // DeleteStageHandler deletes a stage

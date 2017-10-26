@@ -11,7 +11,7 @@ import (
 // GetUUIDsHandler returns a defined number of UUIDs
 func GetUUIDsHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	number, err := strconv.Atoi(r.URL.Query().Get("n"))
-	if err != nil {
+	if err != nil || number < 0 {
 		writeJSONError(w, http.StatusBadRequest, "n parameter is not a valid positive integer")
 	}
 
