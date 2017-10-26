@@ -144,6 +144,17 @@ func UpdateStageHistory(stageID, startRevisionID, activeRevisionID string, revis
 	}
 
 	stageHistoryRef.Revisions = append(stageHistoryRef.Revisions[:revisionsStartIndex+1], revisionIDs...)
+	found := false
+	for _, revision := range stageHistoryRef.Revisions {
+		if revision == activeRevisionID {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("Cannot set active revision to '%s': no corresponding revision", activeRevisionID)
+	}
 	stageHistoryRef.ActiveRevision = activeRevisionID
 
 	// Generate keys
