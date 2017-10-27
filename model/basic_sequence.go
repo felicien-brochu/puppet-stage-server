@@ -8,12 +8,13 @@ import (
 
 // BasicSequence is a monovalued sequence defined by Bezier curves
 type BasicSequence struct {
-	ID        string     `json:"id"`
-	Name      string     `json:"name"`
-	Start     Time       `json:"start"`
-	Duration  Duration   `json:"duration"`
-	Keyframes []Keyframe `json:"keyframes"`
-	Slave     bool       `json:"slave"`
+	ID           string     `json:"id"`
+	Name         string     `json:"name"`
+	Start        Time       `json:"start"`
+	Duration     Duration   `json:"duration"`
+	DefaultValue float64    `json:"defaultValue"`
+	Keyframes    []Keyframe `json:"keyframes"`
+	Slave        bool       `json:"slave"`
 }
 
 const (
@@ -50,6 +51,7 @@ func NewBasicSequence() BasicSequence {
 		"",
 		0,
 		10 * Second,
+		0,
 		make([]Keyframe, 0),
 		false,
 	}
