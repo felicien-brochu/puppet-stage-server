@@ -25,11 +25,13 @@ type Sequence interface {
 // First level sequence, it determines its values by its
 // subsequences.
 type DriverSequence struct {
-	ID        string          `json:"id"`
-	Name      string          `json:"name"`
-	ServoID   string          `json:"servoID"`
-	Sequences []BasicSequence `json:"sequences"`
-	Expanded  bool            `json:"expanded"`
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	ServoID     string          `json:"servoID"`
+	Expanded    bool            `json:"expanded"`
+	Color       int             `json:"color"`
+	PlayEnabled bool            `json:"playEnabled"`
+	Sequences   []BasicSequence `json:"sequences"`
 }
 
 // InitStage inits a new stage

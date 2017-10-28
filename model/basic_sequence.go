@@ -2,19 +2,20 @@ package model
 
 import (
 	"fmt"
-
-	"github.com/google/uuid"
 )
 
 // BasicSequence is a monovalued sequence defined by Bezier curves
 type BasicSequence struct {
-	ID           string     `json:"id"`
-	Name         string     `json:"name"`
-	Start        Time       `json:"start"`
-	Duration     Duration   `json:"duration"`
-	DefaultValue float64    `json:"defaultValue"`
-	Keyframes    []Keyframe `json:"keyframes"`
-	Slave        bool       `json:"slave"`
+	ID             string     `json:"id"`
+	Name           string     `json:"name"`
+	Start          Time       `json:"start"`
+	Duration       Duration   `json:"duration"`
+	DefaultValue   float64    `json:"defaultValue"`
+	Keyframes      []Keyframe `json:"keyframes"`
+	Slave          bool       `json:"slave"`
+	PreviewEnabled bool       `json:"previewEnabled"`
+	PlayEnabled    bool       `json:"playEnabled"`
+	ShowGraph      bool       `json:"showGraph"`
 }
 
 const (
@@ -42,19 +43,6 @@ type BezierCurve struct {
 type Point struct {
 	T Time    `json:"t"`
 	V float64 `json:"v"`
-}
-
-// NewBasicSequence returns a new basic sequence
-func NewBasicSequence() BasicSequence {
-	return BasicSequence{
-		uuid.New().String(),
-		"",
-		0,
-		10 * Second,
-		0,
-		make([]Keyframe, 0),
-		false,
-	}
 }
 
 // NewBezierCurve returns a new BezierCurve
