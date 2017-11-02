@@ -12,6 +12,7 @@ func getRouter() http.Handler {
 	router := httprouter.New()
 
 	router.GET("/puppet/:puppetID/board/:boardID/websocket", controller.ServoPositionWebsocketHandler)
+	router.GET("/puppet/:puppetID/player", controller.PuppetPlayerWebsocketHandler)
 
 	router.NotFound = controller.NotFoundHandler{}
 	router.MethodNotAllowed = controller.MethodNotAllowedHandler{}

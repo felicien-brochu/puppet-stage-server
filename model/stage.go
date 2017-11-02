@@ -1,6 +1,8 @@
 package model
 
 import (
+	"math"
+
 	"github.com/google/uuid"
 )
 
@@ -41,4 +43,23 @@ func InitStage(stage Stage) Stage {
 	stage.Duration = 10 * Second
 
 	return stage
+}
+
+func (stage *Stage) GetFrameAt(t Time) map[string]float64 {
+	var frame = make(map[string]float64)
+	for _, driverSequence := range stage.Sequences {
+		frame[driverSequence.ServoID] = driverSequence.GetValueAt(t)
+	}
+	return frame
+}
+
+func (driverSequence *DriverSequence) GetValueAt(t Time) float64 {
+	var value = math.NaN()
+	for _, basicSequence := range driverSequence.Sequences {
+		if basicSequence.Start.Before(t) && (basicSequence.Start + Time(basicSequence.Duration)).After(t) {
+			value = basicSequence.ValueAt(t)
+			break
+		}
+	}
+	return value
 }

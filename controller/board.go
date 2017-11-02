@@ -2,8 +2,8 @@ package controller
 
 import (
 	"felicien/puppet-server/db"
+	"felicien/puppet-server/drivers"
 	"felicien/puppet-server/model"
-	"felicien/puppet-server/players"
 	"fmt"
 	"net/http"
 
@@ -29,16 +29,18 @@ func StartBoardsHandler(w http.ResponseWriter, r *http.Request, params httproute
 		return
 	}
 
-	player := players.GetPuppetPlayer(*puppet)
-	if player == nil {
-		var err error
-		player, err = players.AddPuppetPlayer(*puppet)
+	driver := drivers.GetPuppetDriver(*puppet)
+	if driver == nil {
+		driver, err = drivers.AddPuppetDriver(*puppet)
 		if err != nil {
 			panic(err)
 		}
 	}
 
-	player.Start()
+	err = driver.Start()
+	if err != nil {
+		panic(err)
+	}
 	writeJSONResponse(w, http.StatusOK, "OK")
 }
 
@@ -60,15 +62,15 @@ func StartBoardHandler(w http.ResponseWriter, r *http.Request, params httprouter
 		return
 	}
 
-	player := players.GetPuppetPlayer(*puppet)
-	if player == nil {
-		player, err = players.AddPuppetPlayer(*puppet)
+	driver := drivers.GetPuppetDriver(*puppet)
+	if driver == nil {
+		driver, err = drivers.AddPuppetDriver(*puppet)
 		if err != nil {
 			panic(err)
 		}
 	}
 
-	err = player.StartBoard(board.ID)
+	err = driver.StartBoard(board.ID)
 	if err != nil {
 		panic(err)
 	}

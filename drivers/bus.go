@@ -1,4 +1,4 @@
-package players
+package drivers
 
 import (
 	"errors"

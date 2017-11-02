@@ -1,8 +1,6 @@
 package model
 
-import (
-	"fmt"
-)
+import "math"
 
 // BasicSequence is a monovalued sequence defined by Bezier curves
 type BasicSequence struct {
@@ -11,11 +9,11 @@ type BasicSequence struct {
 	Start          Time       `json:"start"`
 	Duration       Duration   `json:"duration"`
 	DefaultValue   float64    `json:"defaultValue"`
-	Keyframes      []Keyframe `json:"keyframes"`
 	Slave          bool       `json:"slave"`
-	PreviewEnabled bool       `json:"previewEnabled"`
 	PlayEnabled    bool       `json:"playEnabled"`
+	PreviewEnabled bool       `json:"previewEnabled"`
 	ShowGraph      bool       `json:"showGraph"`
+	Keyframes      []Keyframe `json:"keyframes"`
 }
 
 const (
@@ -81,13 +79,13 @@ func (sequence *BasicSequence) TotalDuration() Duration {
 }
 
 // ValueAt returns the value of the sequence at the given time
-func (sequence *BasicSequence) ValueAt(t Time) (float64, error) {
+func (sequence *BasicSequence) ValueAt(t Time) float64 {
 	curve := sequence.curveAt(t)
 	if curve == nil {
-		return -1, fmt.Errorf("No value at time %d", t)
+		return math.NaN()
 	}
 
-	return curve.ValueAt(t), nil
+	return curve.ValueAt(t)
 }
 
 func (sequence *BasicSequence) curveAt(t Time) *BezierCurve {
