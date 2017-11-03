@@ -91,14 +91,6 @@ func playFrame(stage model.Stage, t model.Time, puppetPlayer *PuppetPlayer, prev
 	var frame = stage.GetFrameAt(t, preview)
 
 	for servoID, value := range frame {
-		var driverSequence model.DriverSequence
-		for _, driverSequenceItem := range stage.Sequences {
-			if driverSequenceItem.ServoID == servoID {
-				driverSequence = driverSequenceItem
-				break
-			}
-		}
-
 		var servo model.Servo
 		for _, board := range puppetPlayer.puppet.Boards {
 			if servoItem, ok := board.Servos[servoID]; ok {
@@ -108,7 +100,7 @@ func playFrame(stage model.Stage, t model.Time, puppetPlayer *PuppetPlayer, prev
 		}
 
 		var position int
-		if math.IsNaN(value) || !driverSequence.PlayEnabled {
+		if math.IsNaN(value) {
 			position = servo.DefaultPosition
 		} else {
 			position = int((value/100)*float64(servo.Max-servo.Min)) + servo.Min

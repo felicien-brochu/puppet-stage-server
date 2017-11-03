@@ -49,27 +49,28 @@ func InitStage(stage Stage) Stage {
 func (stage *Stage) GetFrameAt(t Time, preview bool) map[string]float64 {
 	var frame = make(map[string]float64)
 	for _, driverSequence := range stage.Sequences {
-		frame[driverSequence.ServoID] = driverSequence.GetValueAt(t, preview)
+		var value = driverSequence.GetValueAt(t, preview)
+		if !math.IsNaN(value) {
+			frame[driverSequence.ServoID] = value
+		}
 	}
 	return frame
 }
 
 // GetValueAt returns the value of the driverSequence at time t.
 func (driverSequence *DriverSequence) GetValueAt(t Time, preview bool) float64 {
-	var value = math.NaN()
 	if !preview && !driverSequence.PlayEnabled {
-		return value
+		return math.NaN()
 	}
 
 	for _, basicSequence := range driverSequence.Sequences {
-		if preview && !basicSequence.PreviewEnabled || !preview && !basicSequence.PlayEnabled {
+		if (preview && !basicSequence.PreviewEnabled) || (!preview && !basicSequence.PlayEnabled) {
 			continue
 		}
 
 		if basicSequence.Start.Before(t) && (basicSequence.Start + Time(basicSequence.Duration)).After(t) {
-			value = basicSequence.ValueAt(t)
-			break
+			return basicSequence.ValueAt(t)
 		}
 	}
-	return value
+	return math.NaN()
 }
