@@ -80,12 +80,26 @@ func (sequence *BasicSequence) TotalDuration() Duration {
 
 // ValueAt returns the value of the sequence at the given time
 func (sequence *BasicSequence) ValueAt(t Time) float64 {
-	curve := sequence.curveAt(t)
-	if curve == nil {
-		return math.NaN()
+	var value = math.NaN()
+	if t.After(sequence.Start) && t.Before(sequence.Start+Time(sequence.Duration)) {
+		curve := sequence.curveAt(t)
+		if curve == nil {
+			keyframesLen := len(sequence.Keyframes)
+			if keyframesLen == 0 {
+				value = sequence.DefaultValue
+			} else {
+				if t.Before(sequence.Keyframes[0].P.T) {
+					value = sequence.Keyframes[0].P.V
+				} else if t.After(sequence.Keyframes[keyframesLen-1].P.T) {
+					value = sequence.Keyframes[keyframesLen-1].P.V
+				}
+			}
+		} else {
+			value = curve.ValueAt(t)
+		}
 	}
 
-	return curve.ValueAt(t)
+	return value
 }
 
 func (sequence *BasicSequence) curveAt(t Time) *BezierCurve {
@@ -108,9 +122,9 @@ func (curve *BezierCurve) ValueAt(t Time) float64 {
 	var max = float64(1)
 	var point Point
 
-	for {
+	for i := 0; i < 1000; i++ {
 		point = curve.progressPointAt(progress)
-		if point.T.AbsDiff(t) < BezierTimePrecision {
+		if point.T.AbsDiff(t) <= BezierTimePrecision {
 			break
 		} else if point.T.Before(t) {
 			min = progress

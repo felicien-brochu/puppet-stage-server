@@ -20,7 +20,7 @@ type Servo struct {
 
 const (
 	servoHardMin = 130
-	servoHardMax = 470
+	servoHardMax = 600
 	servoAvg     = (servoHardMin + servoHardMax) / 2
 )
 

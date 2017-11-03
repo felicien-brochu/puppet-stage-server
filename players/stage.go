@@ -11,7 +11,6 @@ const frameInterval = 10 * time.Millisecond
 
 type stagePlayer struct {
 	stage     model.Stage
-	puppet    model.Puppet
 	playStart model.Time
 	started   bool
 	startTime time.Time
@@ -20,10 +19,9 @@ type stagePlayer struct {
 	ticker    chan time.Time
 }
 
-func newStagePlayer(stage model.Stage, puppet model.Puppet, playStart model.Time) stagePlayer {
-	return stagePlayer{
+func newStagePlayer(stage model.Stage, playStart model.Time) *stagePlayer {
+	return &stagePlayer{
 		stage:     stage,
-		puppet:    puppet,
 		playStart: playStart,
 		started:   false,
 	}
@@ -63,7 +61,7 @@ func (player *stagePlayer) playRoutine(puppetPlayer *PuppetPlayer) {
 	player.stateChan <- "start"
 	drainTicker(player.ticker)
 
-	player.playFrame(puppetPlayer, player.getCurrentTime())
+	playFrame(player.stage, player.getCurrentTime(), puppetPlayer, false)
 	endTime := model.Time(player.stage.Duration)
 
 MainLoop:
@@ -74,11 +72,11 @@ MainLoop:
 
 			if t.Before(endTime) {
 				player.stateChan <- strconv.Itoa(int(t))
-				player.playFrame(puppetPlayer, t)
+				playFrame(player.stage, t, puppetPlayer, false)
 			} else {
 				t = endTime
 				player.stateChan <- strconv.Itoa(int(t))
-				player.playFrame(puppetPlayer, t)
+				playFrame(player.stage, t, puppetPlayer, false)
 				break MainLoop
 			}
 		case <-player.done:
@@ -89,12 +87,12 @@ MainLoop:
 	close(player.stateChan)
 }
 
-func (player *stagePlayer) playFrame(puppetPlayer *PuppetPlayer, t model.Time) {
-	var frame = player.stage.GetFrameAt(t)
+func playFrame(stage model.Stage, t model.Time, puppetPlayer *PuppetPlayer, preview bool) {
+	var frame = stage.GetFrameAt(t, preview)
 
 	for servoID, value := range frame {
 		var driverSequence model.DriverSequence
-		for _, driverSequenceItem := range player.stage.Sequences {
+		for _, driverSequenceItem := range stage.Sequences {
 			if driverSequenceItem.ServoID == servoID {
 				driverSequence = driverSequenceItem
 				break
@@ -102,7 +100,7 @@ func (player *stagePlayer) playFrame(puppetPlayer *PuppetPlayer, t model.Time) {
 		}
 
 		var servo model.Servo
-		for _, board := range player.puppet.Boards {
+		for _, board := range puppetPlayer.puppet.Boards {
 			if servoItem, ok := board.Servos[servoID]; ok {
 				servo = servoItem
 				break
@@ -115,7 +113,6 @@ func (player *stagePlayer) playFrame(puppetPlayer *PuppetPlayer, t model.Time) {
 		} else {
 			position = int((value/100)*float64(servo.Max-servo.Min)) + servo.Min
 		}
-
 		puppetPlayer.playServoPosition(servoID, position)
 	}
 }

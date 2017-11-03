@@ -7,6 +7,7 @@ import (
 	"felicien/puppet-server/model"
 	"felicien/puppet-server/players"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -32,9 +33,17 @@ func ServoPositionWebsocketHandler(w http.ResponseWriter, r *http.Request, param
 
 	driver := drivers.GetPuppetDriver(*puppet)
 	if driver == nil {
-		writeJSONError(w, http.StatusNotFound, fmt.Sprintf("No puppet driver for id '%s'.", puppetID))
-		return
+		driver, err = drivers.AddPuppetDriver(*puppet)
+		if err != nil {
+			panic(err)
+		}
 	}
+
+	err = driver.Start()
+	if err != nil {
+		panic(err)
+	}
+	defer driver.Stop()
 
 	boardID := params.ByName("boardID")
 	boardDriver := driver.GetBoardDriver(boardID)
@@ -65,7 +74,11 @@ func ServoPositionWebsocketHandler(w http.ResponseWriter, r *http.Request, param
 			Position: jsonCommand.Position,
 		}
 
-		boardDriver.AddCommand(positionCommand)
+		err = boardDriver.AddCommand(positionCommand)
+		if err != nil {
+			log.Println(err)
+		}
+		<-driver.GetSenderTicker()
 	}
 }
 
@@ -111,12 +124,14 @@ func PuppetPlayerWebsocketHandler(w http.ResponseWriter, r *http.Request, params
 	for {
 		_, message, err := connection.ReadMessage()
 		if err != nil {
+			log.Println(err)
 			panic(err)
 		}
 
 		var jsonCommand jsonPlayerCommand
 		err = json.Unmarshal(message, &jsonCommand)
 		if err != nil {
+			log.Println(err)
 			continue
 		}
 
@@ -124,32 +139,36 @@ func PuppetPlayerWebsocketHandler(w http.ResponseWriter, r *http.Request, params
 			var previewCommand jsonPreviewCommand
 			err = json.Unmarshal(jsonCommand.Body, &previewCommand)
 			if err != nil {
+				log.Println(err)
 				continue
 			}
 
-			player.PreviewServo(previewCommand.ServoID, previewCommand.Value)
+			player.PreviewStage(previewCommand.Stage, previewCommand.Time)
 		} else if jsonCommand.Type == "play" {
 			var playCommand jsonPlayCommand
 			err = json.Unmarshal(jsonCommand.Body, &playCommand)
 			if err != nil {
+				log.Println(err)
 				continue
 			}
 
-			go playStage(player, playCommand.Stage, playCommand.PlayStart, connection)
+			go playStage(player, playCommand.Stage, playCommand.Time, connection)
+		} else if jsonCommand.Type == "stop" {
+			player.StopStage()
 		}
 	}
 }
 
-func playStage(player players.PuppetPlayer, stage model.Stage, playStart model.Time, connection *websocket.Conn) {
+func playStage(player *players.PuppetPlayer, stage model.Stage, playStart model.Time, connection *websocket.Conn) {
 	var playerState = make(chan string)
 	player.PlayStage(stage, playStart, playerState)
 
 	for {
 		state, more := <-playerState
-		connection.WriteMessage(websocket.TextMessage, []byte(state))
 		if !more {
 			return
 		}
+		connection.WriteMessage(websocket.TextMessage, []byte(state))
 	}
 }
 
@@ -159,11 +178,11 @@ type jsonPlayerCommand struct {
 }
 
 type jsonPreviewCommand struct {
-	ServoID string  `json:"servoID"`
-	Value   float64 `json:"value"`
+	Stage model.Stage `json:"stage"`
+	Time  model.Time  `json:"time"`
 }
 
 type jsonPlayCommand struct {
-	Stage     model.Stage `json:"stage"`
-	PlayStart model.Time  `json:"playStart"`
+	Stage model.Stage `json:"stage"`
+	Time  model.Time  `json:"time"`
 }
