@@ -48,8 +48,7 @@ func (driver *BoardDriver) Start(ticker chan time.Time) error {
 }
 
 func (driver *BoardDriver) play(ticker chan time.Time) {
-	defer driver.bus.Close()
-	defer close(driver.commandSink)
+	defer driver.close()
 
 	var otherCommands []Command
 	var positionCommands = make(map[int]PositionCommand)
@@ -76,7 +75,11 @@ MainLoop:
 			break MainLoop
 		}
 	}
+}
+
+func (driver *BoardDriver) close() {
 	driver.started = false
+	driver.bus.Close()
 }
 
 // Stop stops the bus and driver

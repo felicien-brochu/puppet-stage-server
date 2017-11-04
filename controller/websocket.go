@@ -156,6 +156,10 @@ func PuppetPlayerWebsocketHandler(w http.ResponseWriter, r *http.Request, params
 		} else if jsonCommand.Type == "stop" {
 			player.StopStage()
 		}
+
+		if !driver.IsFullyStarted() {
+			break
+		}
 	}
 }
 
@@ -168,7 +172,11 @@ func playStage(player *players.PuppetPlayer, stage model.Stage, playStart model.
 		if !more {
 			return
 		}
-		connection.WriteMessage(websocket.TextMessage, []byte(state))
+		err := connection.WriteMessage(websocket.TextMessage, []byte(state))
+		if err != nil {
+			log.Println(err)
+			return
+		}
 	}
 }
 

@@ -3,7 +3,6 @@ package players
 import (
 	"felicien/puppet-server/drivers"
 	"felicien/puppet-server/model"
-	"log"
 )
 
 // PuppetPlayer is used to play a stage on its puppet or preview a stage on its puppet.
@@ -36,15 +35,17 @@ func (player *PuppetPlayer) StopStage() {
 	player.playing = false
 }
 
-func (player *PuppetPlayer) playServoPosition(servoID string, position int) {
-	err := player.puppetDriver.SetServoPosition(servoID, position)
-	if err != nil {
-		log.Println(err)
-	}
+func (player *PuppetPlayer) playServoPosition(servoID string, position int) error {
+	return player.puppetDriver.SetServoPosition(servoID, position)
 }
 
 // PreviewStage preview the servo positions of the stage at t time.
-func (player *PuppetPlayer) PreviewStage(stage model.Stage, t model.Time) {
-	playFrame(stage, t, player, true)
+func (player *PuppetPlayer) PreviewStage(stage model.Stage, t model.Time) error {
+	err := playFrame(stage, t, player, true)
+	if err != nil {
+		return err
+	}
+
 	<-player.puppetDriver.GetSenderTicker()
+	return nil
 }

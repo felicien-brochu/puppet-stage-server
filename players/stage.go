@@ -59,9 +59,8 @@ func drainTicker(ticker chan time.Time) {
 
 func (player *stagePlayer) playRoutine(puppetPlayer *PuppetPlayer) {
 	player.stateChan <- "start"
-	drainTicker(player.ticker)
+	// drainTicker(player.ticker)
 
-	playFrame(player.stage, player.getCurrentTime(), puppetPlayer, false)
 	endTime := model.Time(player.stage.Duration)
 
 MainLoop:
@@ -72,7 +71,10 @@ MainLoop:
 
 			if t.Before(endTime) {
 				player.stateChan <- strconv.Itoa(int(t))
-				playFrame(player.stage, t, puppetPlayer, false)
+				err := playFrame(player.stage, t, puppetPlayer, false)
+				if err != nil {
+					break MainLoop
+				}
 			} else {
 				t = endTime
 				player.stateChan <- strconv.Itoa(int(t))
@@ -87,7 +89,7 @@ MainLoop:
 	close(player.stateChan)
 }
 
-func playFrame(stage model.Stage, t model.Time, puppetPlayer *PuppetPlayer, preview bool) {
+func playFrame(stage model.Stage, t model.Time, puppetPlayer *PuppetPlayer, preview bool) error {
 	var frame = stage.GetFrameAt(t, preview)
 
 	for servoID, value := range frame {
@@ -105,8 +107,12 @@ func playFrame(stage model.Stage, t model.Time, puppetPlayer *PuppetPlayer, prev
 		} else {
 			position = int((value/100)*float64(servo.Max-servo.Min)) + servo.Min
 		}
-		puppetPlayer.playServoPosition(servoID, position)
+		err := puppetPlayer.playServoPosition(servoID, position)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (player *stagePlayer) getCurrentTime() model.Time {

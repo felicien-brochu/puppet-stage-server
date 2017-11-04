@@ -65,9 +65,24 @@ func NewPuppetDriver(puppet model.Puppet) (*PuppetDriver, error) {
 	return driver, nil
 }
 
+// IsFullyStarted returns true if all the puppet boards are started
+func (driver *PuppetDriver) IsFullyStarted() bool {
+	for _, boardDriver := range driver.boardDrivers {
+		if !boardDriver.started {
+			return false
+		}
+	}
+	return true
+}
+
 // Start starts all boards
 func (driver *PuppetDriver) Start() error {
-	if !driver.started {
+	if !driver.started || (driver.started && !driver.IsFullyStarted()) {
+
+		if driver.started && !driver.IsFullyStarted() {
+			driver.Stop()
+		}
+
 		driver.ticker = time.NewTicker(commandInterval)
 		driver.boardTickers = make([]chan time.Time, 0)
 		driver.senderTicker = make(chan time.Time)
@@ -82,6 +97,7 @@ func (driver *PuppetDriver) Start() error {
 
 		go driver.tick()
 		driver.started = true
+
 	}
 	return nil
 }
@@ -167,9 +183,8 @@ BoardLoop:
 		Addr:     servo.Addr,
 		Position: position,
 	}
-	boardDriver.AddCommand(positionCommand)
 
-	return nil
+	return boardDriver.AddCommand(positionCommand)
 }
 
 // GetSenderTicker returns a ticker that can be used to be in sync with the boards' buses rythm
