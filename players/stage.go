@@ -59,7 +59,6 @@ func drainTicker(ticker chan time.Time) {
 
 func (player *stagePlayer) playRoutine(puppetPlayer *PuppetPlayer) {
 	player.stateChan <- "start"
-	// drainTicker(player.ticker)
 
 	endTime := model.Time(player.stage.Duration)
 
@@ -105,7 +104,13 @@ func playFrame(stage model.Stage, t model.Time, puppetPlayer *PuppetPlayer, prev
 		if math.IsNaN(value) {
 			position = servo.DefaultPosition
 		} else {
-			position = int((value/100)*float64(servo.Max-servo.Min)) + servo.Min
+			min := servo.Min
+			max := servo.Max
+			if servo.Inverted {
+				min = servo.Max
+				max = servo.Min
+			}
+			position = int((value/100)*float64(max-min)) + min
 		}
 		err := puppetPlayer.playServoPosition(servoID, position)
 		if err != nil {

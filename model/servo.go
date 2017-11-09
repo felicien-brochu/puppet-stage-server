@@ -16,6 +16,7 @@ type Servo struct {
 	HardMax         int    `json:"hardMax"`
 	Min             int    `json:"min"`
 	Max             int    `json:"max"`
+	Inverted        bool   `json:"inverted"`
 }
 
 const (
@@ -40,6 +41,7 @@ func DefaultServo() Servo {
 		servoHardMax,
 		servoHardMin,
 		servoHardMax,
+		false,
 	}
 }
 

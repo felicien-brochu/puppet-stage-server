@@ -178,6 +178,12 @@ BoardLoop:
 		return fmt.Errorf("No servo for id '%s' in puppet '%s'", servoID, driver.puppet.ID)
 	}
 
+	if position > servo.Max {
+		position = servo.Max
+	} else if position < servo.Min {
+		position = servo.Min
+	}
+
 	boardDriver := driver.GetBoardDriver(boardID)
 	var positionCommand = PositionCommand{
 		Addr:     servo.Addr,
