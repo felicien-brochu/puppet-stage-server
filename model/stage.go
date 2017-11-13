@@ -13,6 +13,10 @@ type Stage struct {
 	PuppetID  string           `json:"puppetID"`
 	Sequences []DriverSequence `json:"sequences"`
 	Duration  Duration         `json:"duration"`
+	Audio     struct {
+		File string `json:"file"`
+		Mute bool   `json:"mute"`
+	} `json:"audio"`
 }
 
 // Sequence defines a sequence of values over time

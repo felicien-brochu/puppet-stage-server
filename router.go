@@ -41,6 +41,9 @@ func getRouter() http.Handler {
 	router.PUT("/stage/:stageID/history", controller.SaveStageHistoryHandler)
 	router.PUT("/stage/:stageID/history/activeRevision", controller.SaveHistoryActiveRevisionHandler)
 
+	router.GET("/audio/:fileName", controller.GetAudioFile)
+	router.PUT("/audio/:fileName", controller.HandleAudioFileUpload)
+
 	handler := cors.AllowAll().Handler(router)
 
 	return handler
