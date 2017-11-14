@@ -3,6 +3,8 @@ package controller
 import (
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/julienschmidt/httprouter"
@@ -19,7 +21,15 @@ func HandleAudioFileUpload(w http.ResponseWriter, r *http.Request, params httpro
 		return
 	}
 	if strings.Contains(dataURL.ContentType(), "audio/") {
-		ioutil.WriteFile("audio/"+params.ByName("fileName"), dataURL.Data, 0644)
+		var stageDir = "audio/" + params.ByName("stageID")
+		if _, err = os.Stat(stageDir); err != nil {
+			if os.IsNotExist(err) {
+				os.Mkdir(stageDir, 0777)
+			} else {
+				panic(err)
+			}
+		}
+		ioutil.WriteFile(filepath.Join(stageDir, params.ByName("fileName")), dataURL.Data, 0644)
 	} else {
 		writeJSONError(w, http.StatusBadRequest, "Uploaded file is not audio")
 		return
@@ -29,5 +39,5 @@ func HandleAudioFileUpload(w http.ResponseWriter, r *http.Request, params httpro
 
 // GetAudioFile serves audio files
 func GetAudioFile(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	http.ServeFile(w, r, "audio/"+params.ByName("fileName"))
+	http.ServeFile(w, r, "audio/"+params.ByName("stageID")+"/"+params.ByName("fileName"))
 }
