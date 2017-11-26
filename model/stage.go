@@ -2,8 +2,6 @@ package model
 
 import (
 	"math"
-
-	"github.com/google/uuid"
 )
 
 // Stage is the name of a project in Puppet Stage
@@ -38,15 +36,6 @@ type DriverSequence struct {
 	Color       int             `json:"color"`
 	PlayEnabled bool            `json:"playEnabled"`
 	Sequences   []BasicSequence `json:"sequences"`
-}
-
-// InitStage inits a new stage
-func InitStage(stage Stage) Stage {
-	stage.ID = uuid.New().String()
-	stage.Sequences = make([]DriverSequence, 0)
-	stage.Duration = 10 * Second
-
-	return stage
 }
 
 // GetFrameAt returns the values of all sequences at a time t.

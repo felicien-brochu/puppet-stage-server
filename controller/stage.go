@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -62,7 +63,7 @@ func CreateStageHandler(w http.ResponseWriter, r *http.Request, params httproute
 		writeJSONError(w, http.StatusBadRequest, "Stage JSON must contain a puppetID")
 		return
 	}
-	stage = model.InitStage(stage)
+	stage = InitStage(stage)
 	err = db.CreateStage(stage)
 	if err != nil {
 		panic(err)
@@ -70,6 +71,61 @@ func CreateStageHandler(w http.ResponseWriter, r *http.Request, params httproute
 
 	log.Printf("Stage created: %v\n", stage)
 	writeJSONResponse(w, http.StatusCreated, stage)
+}
+
+// InitStage inits a new stage
+func InitStage(stage model.Stage) model.Stage {
+	stage.ID = uuid.New().String()
+	stage.Sequences = make([]model.DriverSequence, 0)
+	stage.Duration = 10 * model.Second
+
+	// Create sequences for each servo
+	if stage.PuppetID != "" {
+		puppet, err := db.GetPuppet(stage.PuppetID)
+		if err != nil {
+			panic(err)
+		}
+
+		if puppet != nil {
+			var color = 0
+			for _, board := range puppet.Boards {
+				for _, servo := range board.Servos {
+					var defaultValue float64
+					if servo.Inverted {
+						defaultValue = float64(servo.Max-servo.DefaultPosition) / float64(servo.Max-servo.Min)
+					} else {
+						defaultValue = float64(servo.DefaultPosition-servo.Min) / float64(servo.Max-servo.Min)
+					}
+
+					var basicSequence = model.BasicSequence{
+						ID:             uuid.New().String(),
+						Name:           "Main",
+						Start:          0,
+						Duration:       stage.Duration,
+						DefaultValue:   defaultValue,
+						Slave:          false,
+						PlayEnabled:    true,
+						PreviewEnabled: false,
+						ShowGraph:      false,
+						Keyframes:      make([]model.Keyframe, 0),
+					}
+					var driverSequence = model.DriverSequence{
+						ID:          uuid.New().String(),
+						Name:        servo.Name,
+						ServoID:     servo.ID,
+						Expanded:    true,
+						Color:       color,
+						PlayEnabled: true,
+						Sequences:   []model.BasicSequence{basicSequence},
+					}
+					color++
+					stage.Sequences = append(stage.Sequences, driverSequence)
+				}
+			}
+		}
+	}
+
+	return stage
 }
 
 // DeleteStageHandler deletes a stage
