@@ -92,9 +92,9 @@ func InitStage(stage model.Stage) model.Stage {
 				for _, servo := range board.Servos {
 					var defaultValue float64
 					if servo.Inverted {
-						defaultValue = float64(servo.Max-servo.DefaultPosition) / float64(servo.Max-servo.Min)
+						defaultValue = float64(servo.Max-servo.DefaultPosition) / float64(servo.Max-servo.Min) * 100.
 					} else {
-						defaultValue = float64(servo.DefaultPosition-servo.Min) / float64(servo.Max-servo.Min)
+						defaultValue = float64(servo.DefaultPosition-servo.Min) / float64(servo.Max-servo.Min) * 100.
 					}
 
 					var basicSequence = model.BasicSequence{
