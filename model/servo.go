@@ -8,15 +8,16 @@ import (
 
 // Servo describes a servomotor
 type Servo struct {
-	ID              string `json:"id"`
-	Name            string `json:"name"`
-	Addr            int    `json:"addr"`
-	DefaultPosition int    `json:"defaultPosition"`
-	HardMin         int    `json:"hardMin"`
-	HardMax         int    `json:"hardMax"`
-	Min             int    `json:"min"`
-	Max             int    `json:"max"`
-	Inverted        bool   `json:"inverted"`
+	ID              string   `json:"id"`
+	Name            string   `json:"name"`
+	Tags            []string `json:"tags"`
+	Addr            int      `json:"addr"`
+	DefaultPosition int      `json:"defaultPosition"`
+	HardMin         int      `json:"hardMin"`
+	HardMax         int      `json:"hardMax"`
+	Min             int      `json:"min"`
+	Max             int      `json:"max"`
+	Inverted        bool     `json:"inverted"`
 }
 
 const (
@@ -35,6 +36,7 @@ func DefaultServo() Servo {
 	return Servo{
 		uuid.New().String(),
 		"",
+		make([]string, 0),
 		-1,
 		servoAvg,
 		servoHardMin,
